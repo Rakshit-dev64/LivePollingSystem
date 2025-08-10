@@ -9,19 +9,24 @@ const Landing = () => {
     setRole(r);
   };
   const continueFunction = ()=>{
-    role === "student" ? navigate('/student') : navigate('/teacher')
+    if(role === "student"){
+      navigate("/student")
+    }
+    else if(role === "teacher"){
+      navigate("/teacher")
+    }
   }
 
   return (
     <div className="flex min-h-screen md:h-screen items-center justify-center px-4 py-6 md:py-0">
       <div className="flex flex-col gap-y-6 md:gap-y-10 items-center justify-center text-center w-4xl max-w-full">
-        <div className="border w-32 md:w-40 p-2 rounded-4xl text-[#F2F2F2] bg-gradient-to-tr from-[#7565D9] to-[#4D0ACD] text-lg md:text-xl">
-          Intervue Poll
+        <div className="border w-46 md:w-46 p-2 font-stretch-110% rounded-4xl text-[#F2F2F2] bg-gradient-to-tr from-[#7565D9] to-[#4D0ACD] text-lg md:text-xl">
+         ✨Intervue Poll
         </div>
         <div className="px-4">
           <h1 className="font-light font-stretch-110% text-2xl md:text-6xl leading-tight">
             Welcome to the{" "}
-            <span className="font-bold">Live Polling System</span>
+            <span className="font-semibold">Live Polling System</span>
           </h1>
           <p className="font-light text-gray-500 m-2 md:m-4 font-stretch-120% text-sm md:text-lg">
             Please select the role that best describes you to begin using the

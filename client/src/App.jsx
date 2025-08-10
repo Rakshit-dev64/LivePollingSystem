@@ -7,13 +7,6 @@ import Teacher from './Components/Teacher';
 import Student from './Components/Student';
 
 const App = () => {
-  // const socket = createSocketConnection();
-  // useEffect(()=>{
-  //   socket.on("connect",()=>{
-  //     console.log("Socket Connected");
-  //   })
-
-  // },[])
   return (
     <div className='bg-[#F2F2F2] font-Manrope'>
       <BrowserRouter>
