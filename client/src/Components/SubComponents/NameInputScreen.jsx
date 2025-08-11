@@ -29,11 +29,15 @@ const NameInputScreen = () => {
             Enter your Name
           </div>
           <input
-            className="w-lg h-11 text-xl border-2 rounded-md border-[#4D0ACD] bg- p-2 font-stretch-110%" onChange={(e)=>setName(e.target.value)}
+            className="w-lg h-11 text-xl bg-gray-200 rounded-md focus:outline-none focus:ring-0 bg- p-2 font-stretch-110%"
+            onChange={(e) => setName(e.target.value)}
             value={name}
           />
         </div>
-        <button onClick={handleContinue} className="w-48 md:w-60 mx-4 my-2 md:m-4 bg-gradient-to-r from-[#7565D9] to-[#4D0ACD] text-md md:text-2xl font-semibold font-stretch-110% rounded-4xl h-12 md:h-16 text-white">
+        <button
+          onClick={handleContinue}
+          className="w-48 md:w-54 mx-4 my-2 md:m-4 bg-gradient-to-r from-[#7565D9] to-[#4D0ACD] text-md md:text-2xl font-semibold font-stretch-110% rounded-4xl h-12 md:h-14 text-white"
+        >
           Continue
         </button>
       </div>

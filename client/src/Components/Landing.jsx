@@ -53,7 +53,7 @@ const Landing = () => {
             </span>
           </button>
         </div>
-        <button onClick={continueFunction} className="w-48 md:w-60 mx-4 my-2 md:m-4 bg-gradient-to-r from-[#7565D9] to-[#4D0ACD] text-lg md:text-2xl font-semibold font-stretch-110% rounded-4xl h-12 md:h-16 text-white">
+        <button onClick={continueFunction} className="w-48 md:w-54 mx-4 my-2 md:m-4 bg-gradient-to-r from-[#7565D9] to-[#4D0ACD] text-md md:text-2xl font-semibold font-stretch-110% rounded-4xl h-12 md:h-14 text-white">
           Continue
         </button>
       </div>
