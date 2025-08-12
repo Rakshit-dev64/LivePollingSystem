@@ -8,11 +8,11 @@ const initializeSocket = (server) => {
   });
   const students = {};
   let currentQuestion = null;
+  let submissions = [];
   io.on("connection", (socket) => {
     socket.on("student_registered",(name)=>{
         students[socket.id] = {
             name : name,
-            answered : false
         }
         console.log(`Student Joined : ${name} ${socket.id}`);
     })
@@ -24,13 +24,25 @@ const initializeSocket = (server) => {
         })
         return;
       }
-      currentQuestion = {question, options, timeLimit, startTime : Date.now()};
+      const correctOptionId = options.find(o => o.isCorrect)?.id;
+      currentQuestion = {question, options, timeLimit, correctOptionId, startTime : Date.now()};
+      submissions = [];
       io.emit("new_question",currentQuestion);
   
       setTimeout(()=>{
+        io.emit("quiz_results",{correctOptionId, submissions});
         currentQuestion = null;
-        io.emit("question_ended");
       },timeLimit * 1000);
+    })
+    socket.on("answer_submitted",({selectedOption})=>{
+      if(selectedOption == null) return;
+      const isCorrect = selectedOption === currentQuestion.correctOptionId;
+
+      submissions.push({
+        studentName: students[socket.id]?.name || "Unknown",
+        selectedOption,
+        isCorrect
+      })
     })
   });
 };
