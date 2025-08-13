@@ -19,14 +19,15 @@ const Student = () => {
     socket.on("new_question", (question) => {
       console.log(question);
       setQuestion(question);
-      setTimeLeft(parseInt(question.timeLimit));
+      const now = Date.now();
+      const remainingTime = Math.max(0, Math.floor((question.endTime - now) / 1000));
+      setTimeLeft(remainingTime);
       setSelectedOption(null);
       setSubmitted(false);
       setCorrectOptionId(null);
     });
-    socket.on("quiz_results", ({ correctOptionId, submissions }) => {
+    socket.on("quiz_results", ({ correctOptionId }) => {
       setCorrectOptionId(correctOptionId);
-      console.log(submissions);
     });
   }, [confirmedName]);
 
@@ -62,7 +63,7 @@ const Student = () => {
   if (!question) return <WaitingScreen />;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-lg max-w-2xl w-full p-8">
         {/* Header with Question number and Timer */}
         <div className="flex justify-between items-center mb-8">
@@ -134,6 +135,16 @@ const Student = () => {
           </button>
         </div>
       </div>
+          {submitted && correctOptionId &&
+          <div className="flex justify-center mt-3"> 
+            <div className="flex items-center justify-center text-lg font-semibold">Wait for the teacher to ask questions..</div>
+            <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-0 border-[#4D0ACD]"></div> 
+          </div>}
+          {submitted && (!correctOptionId) &&
+          <div className="flex justify-center mt-3"> 
+            <div className="flex items-center justify-center text-lg font-semibold">Wait for the result..</div>
+            <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-0 border-[#4D0ACD]"></div> 
+          </div>}
     </div>
   );
 };

@@ -16,6 +16,7 @@ const initializeSocket = (server) => {
         }
         console.log(`Student Joined : ${name} ${socket.id}`);
     })
+    socket.emit("students",students);
     socket.on("send_question",({question, options, timeLimit})=>{
       console.log({question, options, timeLimit})
       if(currentQuestion){
@@ -25,17 +26,20 @@ const initializeSocket = (server) => {
         return;
       }
       const correctOptionId = options.find(o => o.isCorrect)?.id;
-      currentQuestion = {question, options, timeLimit, correctOptionId, startTime : Date.now()};
+      const startTime = Date.now();
+      const endTime = startTime + (timeLimit * 1000);
+      currentQuestion = {question, options, timeLimit, correctOptionId, startTime, endTime};
       submissions = [];
       io.emit("new_question",currentQuestion);
   
+      const timeoutDuration = endTime - Date.now();
       setTimeout(()=>{
         io.emit("quiz_results",{correctOptionId, submissions});
         currentQuestion = null;
-      },timeLimit * 1000);
+      }, timeoutDuration);
     })
     socket.on("answer_submitted",({selectedOption})=>{
-      if(selectedOption == null) return;
+      if(!currentQuestion || selectedOption == null) return;
       const isCorrect = selectedOption === currentQuestion.correctOptionId;
 
       submissions.push({
@@ -43,6 +47,10 @@ const initializeSocket = (server) => {
         selectedOption,
         isCorrect
       })
+    })
+    
+    socket.on("get_current_submissions", () => {
+      socket.emit("current_submissions", submissions);
     })
   });
 };
