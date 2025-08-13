@@ -1,7 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { createSocketConnection } from "../utils/socket";
+import ChatPanel from "./SubComponents/ChatPanel";
+import WaitingScreen from "./SubComponents/WaitingScreen";
+import NameInputScreen from "./SubComponents/NameInputScreen";
 
 const Teacher = () => {
+  const confirmedName = sessionStorage.getItem("name");
   const [question, setQuestion] = useState("");
   const [options, setOptions] = useState([
     { id: 1, text: "", isCorrect: false },
@@ -12,55 +16,62 @@ const Teacher = () => {
   const [timeLimit, setTimeLimit] = useState("30");
   const [showResultsModal, setShowResultsModal] = useState(false);
   const [submissions, setSubmissions] = useState([]);
+  const [showChatPanel, setShowChatPanel] = useState(false);
   const socket = useMemo(() => createSocketConnection(), []);
 
   useEffect(() => {
-      socket.on("connect", () => {
-        console.log("Teacher connected: ", socket.id);
-      });
-      socket.on("question_exist",()=>{
-        console.error("question already exists");
-      });
-      
-      socket.on("current_submissions", (currentSubmissions) => {
-        setSubmissions(currentSubmissions);
-      });
-      
-      socket.on("quiz_results", ({ submissions: finalSubmissions }) => {
-        setSubmissions(finalSubmissions);
-      });
+    if(confirmedName){
+      socket.emit("teacher_registered",confirmedName);
+    }
+    socket.on("connect", () => {
+      console.log("Teacher connected: ", socket.id);
+    });
+    socket.on("question_exist", () => {
+      console.error("question already exists");
+    });
 
-      socket.on("students",(students)=>{
-        console.log(students);
-      })
-    
-      return () => {
-        socket.disconnect();
-      };
-    }, []);
-  
+    socket.on("current_submissions", (currentSubmissions) => {
+      setSubmissions(currentSubmissions);
+    });
+
+    socket.on("quiz_results", ({ submissions: finalSubmissions }) => {
+      setSubmissions(finalSubmissions);
+    });
+
+    socket.on("students", (students) => {
+      console.log(students);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
   const handleOptionChange = (id, value) => {
     setOptions((prev) =>
       prev.map((opt) => (opt.id === id ? { ...opt, text: value } : opt))
-  );
-};
+    );
+  };
 
-const handleCorrectChange = (id, value) => {
-  setOptions((prev) =>
-    prev.map((opt) => (opt.id === id ? { ...opt, isCorrect: value } : opt))
-);
-};
-
+  const handleCorrectChange = (id, value) => {
+    setOptions((prev) =>
+      prev.map((opt) => (opt.id === id ? { ...opt, isCorrect: value } : opt))
+    );
+  };
 
   const handleViewResults = () => {
     socket.emit("get_current_submissions");
     setShowResultsModal(true);
   };
-  
+
   const handleAskQuestion = () => {
-    socket.emit("send_question", { question, options, timeLimit: parseInt(timeLimit) });
+    socket.emit("send_question", {
+      question,
+      options,
+      timeLimit: parseInt(timeLimit),
+    });
   };
-  
+  if (!confirmedName) return <NameInputScreen role="teacher" />;
   return (
     <div className="flex min-h-screen items-start justify-start md:py-0">
       <div className=" flex flex-col w-4xl max-w-full mt-12 ml-30">
@@ -169,21 +180,37 @@ const handleCorrectChange = (id, value) => {
           </button>
         </div>
       </div>
-      
-      {/* View Results Button - Fixed position in bottom right */}
-      <button
-        onClick={handleViewResults}
-        className="fixed bottom-6 right-6 bg-gradient-to-tr from-[#7565D9] to-[#4D0ACD] text-white font-stretch-110% font-semibold px-6 py-3 rounded-lg text-lg hover:opacity-90 transition-opacity shadow-lg"
-      >
-        View Results
-      </button>
-      
+
+      {/* Fixed buttons - Bottom right */}
+      <div className="fixed bottom-6 right-6 flex flex-col space-y-3">
+        {/* Chat Button */}
+        <button
+          onClick={() => setShowChatPanel(true)}
+          className="bg-white border-2 border-[#7565D9] text-[#7565D9] font-stretch-110% font-semibold p-3 rounded-full hover:bg-[#7565D9] hover:text-white transition-all shadow-lg"
+          title="Open Chat"
+        >
+          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4v3c0 .6.4 1 1 1h.1c.3 0 .6-.1.8-.3L14.6 18H20c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 12H7v-2h6v2zm3-4H7V8h9v2z" />
+          </svg>
+        </button>
+
+        {/* View Results Button */}
+        <button
+          onClick={handleViewResults}
+          className="bg-gradient-to-tr from-[#7565D9] to-[#4D0ACD] text-white font-stretch-110% font-semibold px-6 py-3 rounded-lg text-lg hover:opacity-90 transition-opacity shadow-lg"
+        >
+          View Results
+        </button>
+      </div>
+
       {/* Results Modal */}
       {showResultsModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-8 rounded-lg max-w-4xl w-full mx-4 max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">Quiz Submissions</h2>
+              <h2 className="text-2xl font-bold text-gray-800">
+                Quiz Submissions
+              </h2>
               <button
                 onClick={() => setShowResultsModal(false)}
                 className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
@@ -191,33 +218,50 @@ const handleCorrectChange = (id, value) => {
                 ×
               </button>
             </div>
-            
+
             {submissions.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 <p className="text-lg">No submissions yet</p>
-                <p className="text-sm">Submissions will appear here as students answer</p>
+                <p className="text-sm">
+                  Submissions will appear here as students answer
+                </p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse border border-gray-300">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-700">Student Name</th>
-                      <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-700">Selected Option</th>
-                      <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-700">Result</th>
+                      <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-700">
+                        Student Name
+                      </th>
+                      <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-700">
+                        Selected Option
+                      </th>
+                      <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-700">
+                        Result
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {submissions.map((sub, index) => (
-                      <tr key={index} className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                        <td className="border border-gray-300 px-4 py-3">{sub.studentName}</td>
-                        <td className="border border-gray-300 px-4 py-3">Option {sub.selectedOption}</td>
+                      <tr
+                        key={index}
+                        className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                      >
                         <td className="border border-gray-300 px-4 py-3">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            sub.isCorrect 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
-                          }`}>
+                          {sub.studentName}
+                        </td>
+                        <td className="border border-gray-300 px-4 py-3">
+                          Option {sub.selectedOption}
+                        </td>
+                        <td className="border border-gray-300 px-4 py-3">
+                          <span
+                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              sub.isCorrect
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
                             {sub.isCorrect ? "✓ Correct" : "✗ Incorrect"}
                           </span>
                         </td>
@@ -227,7 +271,7 @@ const handleCorrectChange = (id, value) => {
                 </table>
               </div>
             )}
-            
+
             <div className="mt-6 flex justify-end">
               <button
                 onClick={() => setShowResultsModal(false)}
@@ -239,6 +283,15 @@ const handleCorrectChange = (id, value) => {
           </div>
         </div>
       )}
+
+      {/* Chat Panel */}
+      <ChatPanel
+        isOpen={showChatPanel}
+        onClose={() => setShowChatPanel(false)}
+        socket={socket}
+        userType="teacher"
+        userName="Teacher"
+      />
     </div>
   );
 };

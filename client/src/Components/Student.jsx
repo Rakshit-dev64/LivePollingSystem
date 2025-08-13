@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import NameInputScreen from "./SubComponents/NameInputScreen";
 import WaitingScreen from "./SubComponents/WaitingScreen";
+import ChatPanel from "./SubComponents/ChatPanel";
+import ChatButton from "./SubComponents/ChatButton";
 import { createSocketConnection } from "../utils/socket";
 
 const Student = () => {
@@ -11,6 +13,7 @@ const Student = () => {
   const [timeLeft, setTimeLeft] = useState(0);
   const [correctOptionId, setCorrectOptionId] = useState(null);
   const [submitted, setSubmitted] = useState(false);
+  const [showChatPanel, setShowChatPanel] = useState(false);
 
   useEffect(() => {
     if (confirmedName) {
@@ -59,8 +62,18 @@ const Student = () => {
       .padStart(2, "0")}`;
   };
 
-  if (!confirmedName) return <NameInputScreen />;
-  if (!question) return <WaitingScreen />;
+  if (!confirmedName) return <NameInputScreen role ="student"/>;
+  if (!question) return (
+    <>
+      <WaitingScreen />
+      <ChatButton onClick={() => setShowChatPanel(true)} />
+      <ChatPanel 
+        isOpen={showChatPanel}
+        onClose={() => setShowChatPanel(false)}
+        socket={socket}
+      />
+    </>
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
@@ -87,7 +100,7 @@ const Student = () => {
         <div className="space-y-3 mb-8">
           {question.options.map((option, index) => {
             let bgClass = "bg-gray-50 border-gray-200 hover:border-gray-300";
-            if (correctOptionId) {
+            if (correctOptionId && timeLeft == 0) {
               if (option.id === correctOptionId)
                 bgClass = "bg-green-100 border-green-500";
               else if (option.id === selectedOption)
@@ -145,6 +158,16 @@ const Student = () => {
             <div className="flex items-center justify-center text-lg font-semibold">Wait for the result..</div>
             <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-0 border-[#4D0ACD]"></div> 
           </div>}
+          
+      {/* Chat Button */}
+      <ChatButton onClick={() => setShowChatPanel(true)} />
+      
+      {/* Chat Panel */}
+      <ChatPanel 
+        isOpen={showChatPanel}
+        onClose={() => setShowChatPanel(false)}
+        socket={socket}
+      />
     </div>
   );
 };
