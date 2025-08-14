@@ -80,7 +80,7 @@ const Student = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center pt-10 p-4">
       <div className="bg-white rounded-xl shadow-lg max-w-2xl w-full p-8">
         {/* Header with Question number and Timer */}
         <div className="flex justify-between items-center mb-8">
@@ -156,16 +156,22 @@ const Student = () => {
           </button>
         </div>
       </div>
-      {submitted && correctOptionId && timeLeft == 0 &&
-      <div className="flex justify-center mt-3"> 
-        <div className="flex items-center justify-center text-lg font-semibold">Wait for the teacher to ask questions..</div>
-        <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-0 border-[#4D0ACD]"></div> 
-      </div>}
-      {submitted && (!correctOptionId) &&
-      <div className="flex justify-center mt-3"> 
-        <div className="flex items-center justify-center text-lg font-semibold">Wait for the result..</div>
-        <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-0 border-[#4D0ACD]"></div> 
-      </div>}
+      
+      {/* Waiting messages */}
+      <div className="flex justify-center mt-3 h-12 items-center">
+        {submitted && correctOptionId && timeLeft == 0 && (
+          <div className="flex items-center justify-center text-lg font-semibold">
+            <span>Wait for the teacher to ask questions..</span>
+            <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-0 border-[#4D0ACD] ml-2"></div>
+          </div>
+        )}
+        {submitted && timeLeft > 0 && !correctOptionId && (
+          <div className="flex items-center justify-center text-lg font-semibold">
+            <span>Wait for the result..</span>
+            <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-0 border-[#4D0ACD] ml-2"></div>
+          </div>
+        )}
+      </div>
       
   {/* Chat Button */}
    <button
