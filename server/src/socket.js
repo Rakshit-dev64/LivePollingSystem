@@ -77,6 +77,9 @@ const initializeSocket = (server) => {
         isCorrect,
       });
     });
+    socket.on("send_message",(message)=>{
+      io.emit("new_message",message);
+    })
     
     // Send current participants to newly connected client
     broadcastParticipants();
@@ -94,14 +97,11 @@ const initializeSocket = (server) => {
         console.log(`Student ${students[socket.id].name} disconnected`);
         delete students[socket.id];
       }
-      
       // Clear teacher if this was the teacher connection
       if (teacher && teacher.socketId === socket.id) {
         console.log(`Teacher ${teacher.name} disconnected`);
         teacher = null;
       }
-      
-      // Broadcast updated participants to all clients
       broadcastParticipants();
     });
   });

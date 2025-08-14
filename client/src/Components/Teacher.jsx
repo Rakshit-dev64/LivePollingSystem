@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { createSocketConnection } from "../utils/socket";
 import ChatPanel from "./SubComponents/ChatPanel";
-import WaitingScreen from "./SubComponents/WaitingScreen";
+import ChatButton from "./SubComponents/ChatButton";
 import NameInputScreen from "./SubComponents/NameInputScreen";
 
 const Teacher = () => {
@@ -20,8 +20,8 @@ const Teacher = () => {
   const socket = useMemo(() => createSocketConnection(), []);
 
   useEffect(() => {
-    if(confirmedName){
-      socket.emit("teacher_registered",confirmedName);
+    if (confirmedName) {
+      socket.emit("teacher_registered", confirmedName);
     }
     socket.on("connect", () => {
       console.log("Teacher connected: ", socket.id);
@@ -170,40 +170,39 @@ const Teacher = () => {
           </div>
         </div>
 
-        {/* Ask Question Button */}
-        <div className="mt-8 flex justify-end">
-          <button
-            onClick={handleAskQuestion}
-            className="bg-gradient-to-tr from-[#7565D9] to-[#4D0ACD] text-white font-stretch-110% font-semibold px-8 py-3 rounded-lg text-lg hover:opacity-90 transition-opacity"
-          >
-            Ask Question
-          </button>
+        <div className="mt-8 flex justify-end gap-x-4">
+          <div className="">
+            <button
+              onClick={handleAskQuestion}
+              className="bg-gradient-to-tr from-[#7565D9] to-[#4D0ACD] text-white font-stretch-110% font-semibold px-8 py-3 rounded-lg text-lg hover:opacity-90 transition-opacity"
+            >
+              Ask Question
+            </button>
+          </div>
+           {/* View Results Button */}
+        <button
+          onClick={handleViewResults}
+          className="bg-gradient-to-tr from-[#7565D9] to-[#4D0ACD] text-white font-stretch-110% font-semibold px-8 py-3 rounded-lg text-lg hover:opacity-90 transition-opacity"
+        >
+          View Results
+        </button>
         </div>
       </div>
 
-      {/* Fixed buttons - Bottom right */}
       <div className="fixed bottom-6 right-6 flex flex-col space-y-3">
         {/* Chat Button */}
         <button
           onClick={() => setShowChatPanel(true)}
-          className="bg-white border-2 border-[#7565D9] text-[#7565D9] font-stretch-110% font-semibold p-3 rounded-full hover:bg-[#7565D9] hover:text-white transition-all shadow-lg"
+          className="fixed bottom-6 right-6 bg-white border-2 border-[#7565D9] text-[#7565D9] font-semibold p-3 rounded-full hover:bg-[#7565D9] hover:text-white transition-all shadow-lg z-40"
           title="Open Chat"
         >
           <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
             <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4v3c0 .6.4 1 1 1h.1c.3 0 .6-.1.8-.3L14.6 18H20c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 12H7v-2h6v2zm3-4H7V8h9v2z" />
           </svg>
         </button>
-
-        {/* View Results Button */}
-        <button
-          onClick={handleViewResults}
-          className="bg-gradient-to-tr from-[#7565D9] to-[#4D0ACD] text-white font-stretch-110% font-semibold px-6 py-3 rounded-lg text-lg hover:opacity-90 transition-opacity shadow-lg"
-        >
-          View Results
-        </button>
       </div>
 
-      {/* Results Modal */}
+      {/* Results */}
       {showResultsModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-8 rounded-lg max-w-4xl w-full mx-4 max-h-[80vh] overflow-y-auto">
@@ -289,8 +288,7 @@ const Teacher = () => {
         isOpen={showChatPanel}
         onClose={() => setShowChatPanel(false)}
         socket={socket}
-        userType="teacher"
-        userName="Teacher"
+        name={confirmedName}
       />
     </div>
   );

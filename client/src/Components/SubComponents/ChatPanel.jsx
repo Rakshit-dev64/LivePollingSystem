@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-const ChatPanel = ({ isOpen, onClose, socket }) => {
+const ChatPanel = ({ isOpen, onClose, socket, name }) => {
   const [activeTab, setActiveTab] = useState('chat');
   const [messages, setMessages] = useState([
   ]);
@@ -20,37 +20,35 @@ const ChatPanel = ({ isOpen, onClose, socket }) => {
     if (newMessage.trim()) {
       const message = {
         text: newMessage,
-        sender: "You",
-        userType: "student",
+        sender: name,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
-      
-      setMessages(prev => [...prev, message]);
+      socket.emit("send_message", message);
       setNewMessage('');
     }
   };
-
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  };
-
   const handleParticipants = () => {
     setActiveTab('participants');
   }
 
   useEffect(() => {
     if (!socket) return;
+    
     const handleParticipants = (participants) => {
       setParticipants(participants);
       console.log("Hello", participants);
     };
+    
+    const handleNewMessage = (message) => {
+      setMessages(prev => [...prev, message]);
+    };
+    
     socket.on("participants", handleParticipants);
+    socket.on("new_message", handleNewMessage);
 
     return () => {
       socket.off("participants", handleParticipants);
+      socket.off("new_message", handleNewMessage);
     };
   }, [socket]);
 
@@ -110,13 +108,13 @@ const ChatPanel = ({ isOpen, onClose, socket }) => {
                     <div
                       key={index}
                       className={`flex ${
-                        message.sender === "You"
+                        message.sender === name
                           ? 'justify-end'
                           : 'justify-start'
                       }`}
                     >
                       <div className={`max-w-xs px-3 py-2 rounded-lg ${
-                        message.sender === "You"
+                        message.sender === name
                           ? 'bg-[#7565D9] text-white'
                           : 'bg-gray-200 text-gray-800'
                       }`}>
@@ -138,7 +136,7 @@ const ChatPanel = ({ isOpen, onClose, socket }) => {
                     type="text"
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={handleKeyPress}
+                    onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
                     placeholder="Type a message..."
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7565D9] focus:border-transparent"
                   />
