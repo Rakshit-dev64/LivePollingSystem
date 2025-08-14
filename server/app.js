@@ -3,7 +3,7 @@ import { createServer } from "http";
 import initializeSocket from "./src/socket.js";
 
 const app = express();
-const PORT = 4000;
+const PORT = process.env.PORT || 4000;
 const server = createServer(app);
 initializeSocket(server);
 
